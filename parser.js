@@ -140,3 +140,66 @@ specialForms.do = (args, scope) => {
     }
     return value;
 }
+
+// define - to create bindings and give them new values
+// expects a word as its first argument and an expression producing the value to assign to that word as its second argument.
+// since define like everything, is an expression, it must return a value.
+
+specialForms.define = (args, scope) => {
+    if(args.length != 2 || args[0].type != "word"){
+        throw new SyntaxError("Incorrect use of define");
+    }
+    let value = evaluate(args[1], scope);
+    scope[args[0].name] = value;
+    return value;
+};
+
+// The Environment
+
+// The scope accepted by evaluate is an object with properties whose names correspond to binding names
+// and whose values correspond to the values those bindings are bound to.
+
+// Let's define an object to represent the global scope
+
+const topScope = Object.create(null);
+
+topScope.true = true;
+topScope.false = false;
+
+// We can now evaluate a simple expression that negates a boolean value.
+
+// let prog = parse(`if(true, false, true)`);
+// console.log(evaluate(prog, topScope));
+
+// To supply basic arithmetic and comparison operators, we will also add some function values to the scope
+
+for(let op of ["+", "-", "*", "/", "==", "<", ">"]){
+    topScope[op] = Function("a, b", `return a ${op} b;`);
+}
+
+// Useful to have a way to output values, so we'll wrap console.log in a function and call it print.
+
+topScope.print = value => {
+    console.log(value);
+    return value;
+};
+
+// The following function provides a convenient way to parse a program and run it in a fresh scope:
+
+function run(program){
+    return evaluate(parse(program), Object.create(topScope));
+}
+
+// We'll use object prototype chains to represent nested scopes so that the program can add bindings to its local scope without changing top level scope.
+
+// Computes sum of numbers 1 to 10, expressed in wisp
+run(`
+    do(define(total, 0),
+    define(count, 1),
+    while(<(count, 11),
+            do(define(total, +(total, count)),
+                define(count, +(count, 1)))),
+    print(total))
+`);
+
+// -> 55
