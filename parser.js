@@ -193,13 +193,74 @@ function run(program){
 // We'll use object prototype chains to represent nested scopes so that the program can add bindings to its local scope without changing top level scope.
 
 // Computes sum of numbers 1 to 10, expressed in wisp
-run(`
-    do(define(total, 0),
-    define(count, 1),
-    while(<(count, 11),
-            do(define(total, +(total, count)),
-                define(count, +(count, 1)))),
-    print(total))
-`);
+// run(`
+//     do(define(total, 0),
+//     define(count, 1),
+//     while(<(count, 11),
+//             do(define(total, +(total, count)),
+//                 define(count, +(count, 1)))),
+//     print(total))
+// `);
 
 // -> 55
+
+
+// Functions
+
+// add 'fun' construct, which treats its last argument as the function's body and 
+// uses all arguments before that as the names of the function's parameters.
+
+specialForms.fun = (args, scope) => {
+    if(!args.length){
+        throw new SyntaxError("Functions need a body");
+    }
+    let body = args[args.length - 1];
+    let params = args.slice(0, args.length - 1).map(expr =>{
+        if(expr.type != "word"){
+            throw new SyntaxError("Parameters names must be words");
+        }
+        return expr.name;
+    }
+    );
+
+    return function(...args){
+        if(args.length != params.length){
+            throw new TypeError("Wrong number of arguments");
+        }
+        let localScope = Object.create(scope);
+        for(let i = 0; i < args.length; i++){
+            localScope[params[i]] = args[i];
+        }
+        return evaluate(body, localScope);
+    };
+};
+
+// functions in wisp get their own local scope.
+// function produced by the fun form creates this local scope and adds the argument bindings to it.
+// it then evaluates the function body in this scope and returns the result.
+
+run(`
+    do(define(plusOne, fun(a, +(a, 1))),
+    print(plusOne(10)))
+`);
+
+run(`
+    do(define(pow, fun(base, exp,
+        if(==(exp, 0),
+            1,
+            *(base, pow(base, -(exp, 1)))))),
+    print(pow(2, 10)))
+`);
+
+// What we ha built is an interpreter.
+// During evaluation, it acts directly on the representation of the program produced by the parser.
+
+// Compilation is the process of adding another step between parsing and the running of the program
+// which transforms the program into something that can be evaluated more efficiently by doing as much work possible in advance.
+
+// Any process that converts a program to a different representation can be thought of as compilation.
+
+// Alternative evaluation strategy -
+// first convert the program into javascript program
+// use Function to invoke JavaScript compiler on it and runs the result
+// It'll make wisp run very fast while still being quite simple to implement.
