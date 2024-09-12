@@ -1,3 +1,8 @@
+# Wisp
+
+## A simple programming language that is implemented in JavaScript
+
+### Following program binds the value 10 to the variable x, then prints "large" if x is greater than 5, and "small" otherwise
 ```js
 do(define(x, 10),
    if(>(x, 5),
@@ -37,3 +42,25 @@ run(`
 // → 55
 ```
 
+
+### Defines a function, plusOne, that adds one to its argument, and calls it
+```js
+run(`
+    do(define(plusOne, fun(a, +(a, 1))),
+    print(plusOne(10)))
+`);
+// -> 11
+```
+
+
+### Defines a function, pow, that raises its first argument to the power of the second, and calls it
+```js
+run(`
+    do(define(pow, fun(base, exp,
+        if(==(exp, 0),
+            1,
+            *(base, pow(base, -(exp, 1)))))),
+    print(pow(2, 10)))
+`);
+// -> 1024
+```
