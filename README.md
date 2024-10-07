@@ -64,3 +64,38 @@ run(`
 `);
 // -> 1024
 ```
+
+### Defines a function, sum that computes the sum of an array of numbers, and calls it
+```js
+run(`
+    do(define(sum, fun(array,
+         do(define(i, 0),
+            define(sum, 0),
+            while(<(i, length(array)),
+              do(define(sum, +(sum, element(array, i))),
+                 define(i, +(i, 1)))),
+            sum))),
+       print(sum(array(1, 2, 3))))
+`);
+// -> 6
+```
+
+### Defines a function f that returns a function that adds its argument to the argument of f
+```js
+run(`
+    do(define(f, fun(a, fun(b, +(a, b)))),
+       print(f(4)(5)))
+`);
+// -> 9
+```
+
+### A comment in wisp is a line that starts with a hash sign (#), here is an example
+```js
+run(`
+    # This is a comment
+    print(1)
+`);
+// -> 1
+```
+
+
