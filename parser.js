@@ -26,9 +26,12 @@ function parseExpression(program) {
 // The skipSpace function helps with this.
 
 function skipSpace(string) {
-  let first = string.search(/\S/);
-  if (first == -1) return "";
-  return string.slice(first);
+  // Regular expression to match whitespace and comments (starting with #)
+  let match = string.match(/(\s|#.*)*/);
+  if(match){
+    return string.slice(match[0].length);
+  }
+  return "";
 }
 
 // Cut off the part that was matched from the program string and pass that,
@@ -301,3 +304,11 @@ run(`
     do(define(f, fun(a, fun(b, +(a, b)))),
        print(f(4)(5)))
 `);
+
+console.log(parse("# hello\nx"));
+// → {type: "word", name: "x"}
+
+console.log(parse("a # one\n   # two\n()"));
+// → {type: "apply",
+//    operator: {type: "word", name: "a"},
+//    args: []}
